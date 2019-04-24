@@ -6,7 +6,7 @@ category = "std"
 ipr = "trust200902"
 area = "Internet"
 workgroup = "DNSOP Working Group"
-updates = [7873]
+updates = [6195]
 date = 2019-03-25T00:00:00Z
 
 [seriesInfo]
@@ -118,6 +118,17 @@ TXT RR defined in [@!RFC1034], e.g.
 
 If a Zone Transfer is requested by a server not supporting Covert records
 the queried server SHOULD send the zone ommiting those records.
+
+# Update to RRTYPE Allocation Template
+
+RRTYPE Allocation Template from [@!RFC6895] is updated to contain a checkbox
+for Covert-RR:
+
+~~~ ascii-art
+
+B.2 Kind of RR:  [ ] Data RR  [ ] Meta-RR  [ ] Covert-RR
+
+~~~
 
 # IANA Considerations
 
