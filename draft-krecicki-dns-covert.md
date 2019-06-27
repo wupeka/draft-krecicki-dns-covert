@@ -34,8 +34,11 @@ Domain Name System (DNS) Resource Record TYPEs IANA registry reserves range
 only be queried for or contain transient data associated with a particular
 DNS message.
 This document reserves a range of RR TYPE numbers for Covert-TYPEs - types
-that are integral part of the zone but cannot be regularly queried for, it
-does not define any specific Covert-TYPE.
+that are integral part of the zone but cannot be normally accessed via a
+QUERY operation.
+An example usages could be a zone comment that's transferrable with the zone,
+expiry time for dynamically updated records, or Zone Signing Key for inline
+signing - this document however does not define any specific Covert RR-TYPEs.
 
 {mainmatter}
 
@@ -99,14 +102,11 @@ If a server requesting zone transfer understands Covert semantics, it
 MUST set COVERT-OK bit in the EDNS header flags. If a Primary Server providing
 zone transfer receives such request it then knows it can transfer the zone
 securely.
-However, if the primary server receives a zone transfer request without the
-COVERT-OK flag set it MUST NOT transfer the zone with Covert RRs - it might
-either provide the zone without them or refuse the transfer completely, the
-behaviour depends on the specific Type existing in the zone, and it MUST be
-specified by the document defining the Type.
-If the zone contains at least one Resource Record for which the defined
-behaviour is to refuse the transfer or one that the Primary server does not
-understand, the zone transfer MUST be refused.
+If the primary server receives a zone transfer request without the COVERT-OK
+flag set it MUST NOT transfer the zone with Covert RRs. The default
+behaviour MUST be to refuse the transfer altogether, but an implementation MAY
+have a configuration option to allow transfer of the zone with Covert RRs
+stripped when transferring to a a non-compliant secondary.
 
 # Update to RRTYPE Allocation Template
 
