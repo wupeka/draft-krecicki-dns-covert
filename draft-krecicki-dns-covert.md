@@ -7,7 +7,7 @@ ipr = "trust200902"
 area = "Internet"
 workgroup = "DNSOP Working Group"
 updates = [6195]
-date = 2019-03-25T00:00:00Z
+date = 2019-06-27T00:00:00Z
 
 [seriesInfo]
 name = "Internet-Draft"
@@ -34,9 +34,8 @@ Domain Name System (DNS) Resource Record TYPEs IANA registry reserves range
 only be queried for or contain transient data associated with a particular
 DNS message.
 This document reserves a range of RR TYPE numbers for Covert-TYPEs - types
-that are integral part of the zone but cannot be regularly queried for.
-It also defines a NOTE Covert Resource Record - an equivalent of zone
-comment as defined in [@!RFC1035] that is transferred with the zone.
+that are integral part of the zone but cannot be regularly queried for, it
+does not define any specific Covert-TYPE.
 
 {mainmatter}
 
@@ -44,80 +43,70 @@ comment as defined in [@!RFC1035] that is transferred with the zone.
 
 Domain Name System (DNS) has no mechanism for sending control information
 in-band with the zone from Primary to Secondary servers.
-This document specifies a range of Resource Record TYPEs that is to be used for
+This document specifies a range of Resource Record TYPEs that can be used for
 Covert Resource Records - ones that are transferred with zone using Zone
 Transfer but are not accessible by regular querying clients.
-It also specifies a method for signalling Primary server that
-the Secondary understands Covert semantics and that it won't disclose
-contents of Covert RRs to querying clients.
-
-A new NOTE Resource Records is defined in this document, other usages
-could be e.g. transferring DNSSEC Zone Signing Key for online signing or
-timeouts for dynamic records.
-
+It also specifies a method for signalling Primary server that the Secondary
+understands Covert semantics and that it won't disclose contents of Covert RRs
+to querying clients.
 
 ## Definitions
 
-The key words "**MUST**", "**MUST NOT**", "**REQUIRED**", 
+The key words "**MUST**", "**MUST NOT**", "**REQUIRED**",
 "**SHALL**", "**SHALL NOT**", "**SHOULD**", "**SHOULD NOT**",
 "**RECOMMENDED**", "**NOT RECOMMENDED**", "**MAY**", and
 "**OPTIONAL**" in this document are to be interpreted as described in
 BCP 14 [@!RFC2119] [@!RFC8174] when, and only when, they appear in all
 capitals, as shown here.
 
-# Covert Resource Records
+# Handling of Covert Resource Records
 
-The usage of Covert Resource Records is not clearly defined - they can be
-used for any kind of unidirectional communication between Primary and
-Secondary server.
+Covert Resource Records require special handling for both queries and zone
+transfers. This document does not define any specific Covert Resource
+Record, they might require additional handling on the server side but it's
+out of scope of this document.
 
-## Handling of Covert Resource Records
+## Querying for Covert Resource Records
 
 The Covert Resource Records might contain sensitive data and therefore they
 MUST NOT be served to regular clients. The server MAY provide a mechanism
 allowing clients to query for Resource Records in Covert range, but it MUST be
 protected by a mechanism disallowing access from general public (e.g. an
 ACL or TSIG authentication) and the general access MUST NOT be enabled by
-default. 
+default.
 With this exception in place, a server queried for a Covert RR MUST return
-an answer as if the particular node for which client asks does not exists
- - either NODATA if there are some other Resource Records or it's
-an empty non-terminal, or NXDOMAIN otherwise. (TODO: should it be signed?)
+an answer as if the particular leaf for which client asks does not exists -
+either NODATA if there are some other Resource Records or it's
+an empty non-terminal, or NXDOMAIN otherwise.
+
+## Interaction with DNSSEC
+
+Since Covert Resource Records are not available for regular querying and are
+used only internally their existence in zone should not, in any way, change
+the behaviour of zone. Therefore, when signing the zone, Covert Resource
+Records MUST be ommited entirely and treated as they do not exist.
+
+## Interaction with ZONEMD
+
+TODO?
 
 ## Protection of Zone Transfers
 
 If a Secondary Server requesting a zone transfer does not understand the Covert
-semantics it might serve the RR to its clients - therefore a protection
-mechanism must be put in place.
+semantics it will serve the Covert Resource Records to its clients - therefore
+a protection mechanism must be put in place.
 If a server requesting zone transfer understands Covert semantics, it
-MUST set COVERT-OK bit in EDNS header flags. If a server providing zone
-transfer receives such request it then knows it can transfer the zone
+MUST set COVERT-OK bit in the EDNS header flags. If a Primary Server providing
+zone transfer receives such request it then knows it can transfer the zone
 securely.
-However, if the server receives a zone transfer request without the
+However, if the primary server receives a zone transfer request without the
 COVERT-OK flag set it MUST NOT transfer the zone with Covert RRs - it might
 either provide the zone without them or refuse the transfer completely, the
-behaviour depends on the specific Type of Resource Record, and it MUST be
+behaviour depends on the specific Type existing in the zone, and it MUST be
 specified by the document defining the Type.
-
-# Definition of a NOTE Resource Record
-
-The NOTE RR is defined for all classess, with mnemonic NOTE and type code
-61440. RDATA and presentation formats are identical to those of
-TXT RR defined in [@!RFC1034], e.g.
-
-~~~ ascii-art
-
-       $ORIGIN example.com.
-       joesbox   7200  IN  A       198.51.100.42
-                 7200  IN  AAAA    2001:DB8:3F:B019::17
-                 0     IN  NOTE    "Desktop system for Joe Smith, x7889"
-
-~~~
-
-## Behaviour of NOTE RR for Zone Transfer clients not supporting COVERT-OK
-
-If a Zone Transfer is requested by a server not supporting Covert records
-the queried server SHOULD send the zone ommiting those records.
+If the zone contains at least one Resource Record for which the defined
+behaviour is to refuse the transfer or one that the Primary server does not
+understand, the zone transfer MUST be refused.
 
 # Update to RRTYPE Allocation Template
 
@@ -138,14 +127,12 @@ types from [@!RFC6895] should be used.
 
 IANA is requested to assign Bit 1 of EDNS Header to COVERT-OK bit.
 
-IANA is requested to assign a Resource Record type 61440 for NOTE RR.
-
 # Security considerations
 
 Since Zone Transfers are unencrypted the contents of Covert RRs might still
 be snooped by an on-path attacker. Protection against this kind of attack is
 outside of scope of this document, it can be achieved using e.g. a secure
-tunnel, private network or a form of DNS over TLS transport. 
- 
+tunnel, private network or using XFR over TLS transport.
+
 {backmatter}
 
