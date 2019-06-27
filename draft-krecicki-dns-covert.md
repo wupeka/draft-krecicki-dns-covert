@@ -48,7 +48,7 @@ Domain Name System (DNS) has no mechanism for sending control information
 in-band with the zone from Primary to Secondary servers.
 This document specifies a range of Resource Record TYPEs that can be used for
 Covert Resource Records - ones that are transferred with zone using Zone
-Transfer but are not accessible by regular querying clients.
+Transfer but are not accessible by a normal QUERY operation.
 It also specifies a method for signalling Primary server that the Secondary
 understands Covert semantics and that it won't disclose contents of Covert RRs
 to querying clients.
