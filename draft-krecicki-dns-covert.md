@@ -80,10 +80,12 @@ OPTION-LENGTH MUST be zero and OPTION-DATA MUST be empty.
 If a Secondary Server requesting a zone transfer does not understand the Covert
 semantics it will serve the Covert Resource Records to its clients - therefore
 a protection mechanism must be put in place.
+
 If a server requesting zone transfer understands Covert semantics, it
 MUST send COVERT-OK  option in the transfer request. If a Primary Server providing
 zone transfer receives such request it then knows it can transfer the zone
 securely.
+
 If the primary server receives a zone transfer request without the COVERT-OK
 option it MUST NOT transfer the zone with Covert RRs. The default
 behaviour MUST be to refuse the transfer altogether, but an implementation MAY
@@ -93,16 +95,19 @@ stripped when transferring to a non-compliant secondary.
 ## Authoritative server behaviour
 
 The Covert Resource Records might contain sensitive data and therefore they
-MUST NOT be served to regular clients. The server MAY provide a mechanism
-allowing clients to query for Resource Records in Covert range, but it MUST be
-protected by a mechanism disallowing access from general public (e.g. an
+MUST NOT be served to regular clients. 
+An authoritative server queried for a Covert RR MUST return an answer as if
+the particular leaf for which client asks does not exists - either NODATA if
+there are some other Resource Records or it's an empty non-terminal, or
+NXDOMAIN otherwise.
+
+The server MAY provide a mechanism allowing clients to query for Resource
+Records in Covert range, but it MUST be protected by a mechanism disallowing
+access from general public (e.g. an
 ACL or TSIG authentication) and the general access MUST NOT be enabled by
 default. The server MUST verify that the query has the COVERT-OK option
 and not return COVERT records otherwise.
-With this exception in place, a server queried for a Covert RR MUST return
-an answer as if the particular leaf for which client asks does not exists -
-either NODATA if there are some other Resource Records or it's
-an empty non-terminal, or NXDOMAIN otherwise.
+
 
 ## Recursive server behaviour
 
