@@ -7,7 +7,7 @@ ipr = "trust200902"
 area = "Internet"
 workgroup = "DNSOP Working Group"
 updates = [6195]
-date = 2019-06-27T00:00:00Z
+date = 2019-07-05T00:00:00Z
 
 [seriesInfo]
 name = "Internet-Draft"
@@ -69,18 +69,48 @@ transfers. This document does not define any specific Covert Resource
 Record, they might require additional handling on the server side but it's
 out of scope of this document.
 
-## Querying for Covert Resource Records
+## The COVERT-OK option
+A client querying or a secondary transferring a zone from a primary server
+must explicitly signal its understanding of the COVERT RR-TYPEs. The mechanism
+for this is an EDNS option, with OPTION-CODE [TBD].
+OPTION-LENGTH MUST be zero and OPTION-DATA MUST be empty.
+
+## Protection of Zone Transfers
+
+If a Secondary Server requesting a zone transfer does not understand the Covert
+semantics it will serve the Covert Resource Records to its clients - therefore
+a protection mechanism must be put in place.
+If a server requesting zone transfer understands Covert semantics, it
+MUST send COVERT-OK  option in the transfer request. If a Primary Server providing
+zone transfer receives such request it then knows it can transfer the zone
+securely.
+If the primary server receives a zone transfer request without the COVERT-OK
+option it MUST NOT transfer the zone with Covert RRs. The default
+behaviour MUST be to refuse the transfer altogether, but an implementation MAY
+have a configuration option to allow transfer of the zone with Covert RRs
+stripped when transferring to a non-compliant secondary.
+
+## Authoritative server behaviour
 
 The Covert Resource Records might contain sensitive data and therefore they
 MUST NOT be served to regular clients. The server MAY provide a mechanism
 allowing clients to query for Resource Records in Covert range, but it MUST be
 protected by a mechanism disallowing access from general public (e.g. an
 ACL or TSIG authentication) and the general access MUST NOT be enabled by
-default.
+default. The server MUST verify that the query has the COVERT-OK option
+and not return COVERT records otherwise.
 With this exception in place, a server queried for a Covert RR MUST return
 an answer as if the particular leaf for which client asks does not exists -
 either NODATA if there are some other Resource Records or it's
 an empty non-terminal, or NXDOMAIN otherwise.
+
+## Recursive server behaviour
+
+Recursive server MUST NOT send COVERT-OK option when iterating. If a COVERT
+record is received when iterating it MUST NOT be cached and it MUST NOT be
+returned to the client. If a recursive server receives a request for a
+COVERT record it may either iterate to verify whether the answer should be
+an NXDOMAIN or NODATA, or simply return a NODATA response immediately.
 
 ## Interaction with DNSSEC
 
@@ -91,22 +121,7 @@ Records MUST be ommited entirely and treated as they do not exist.
 
 ## Interaction with ZONEMD
 
-TODO?
-
-## Protection of Zone Transfers
-
-If a Secondary Server requesting a zone transfer does not understand the Covert
-semantics it will serve the Covert Resource Records to its clients - therefore
-a protection mechanism must be put in place.
-If a server requesting zone transfer understands Covert semantics, it
-MUST set COVERT-OK bit in the EDNS header flags. If a Primary Server providing
-zone transfer receives such request it then knows it can transfer the zone
-securely.
-If the primary server receives a zone transfer request without the COVERT-OK
-flag set it MUST NOT transfer the zone with Covert RRs. The default
-behaviour MUST be to refuse the transfer altogether, but an implementation MAY
-have a configuration option to allow transfer of the zone with Covert RRs
-stripped when transferring to a a non-compliant secondary.
+TBD
 
 # Update to RRTYPE Allocation Template
 
@@ -119,20 +134,25 @@ B.2 Kind of RR:  [ ] Data RR  [ ] Meta-RR  [ ] Covert-RR
 
 ~~~
 
-# IANA Considerations
-
-IANA is requested to reserve range 61440-61695 (0xF000-0xF0FF) in Resource
-Record TYPEs registry for Covert types. The procedure for registering RR
-types from [@!RFC6895] should be used.
-
-IANA is requested to assign Bit 1 of EDNS Header to COVERT-OK bit.
-
 # Security considerations
 
 Since Zone Transfers are unencrypted the contents of Covert RRs might still
 be snooped by an on-path attacker. Protection against this kind of attack is
 outside of scope of this document, it can be achieved using e.g. a secure
 tunnel, private network or using XFR over TLS transport.
+
+# IANA Considerations
+
+IANA is requested to reserve range 61440-61695 (0xF000-0xF0FF) in Resource
+Record TYPEs registry for Covert types. The procedure for registering RR
+types from [@!RFC6895] should be used.
+
+IANA is requested to assign an EDNS option code to COVERT-OK option.
+
+# Acknowledgments
+
+Thanks to Evan Hunt and Dan Mahoney for suggestions and clarifications based
+on their NOTE RR draft.
 
 {backmatter}
 
