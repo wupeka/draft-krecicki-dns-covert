@@ -117,7 +117,11 @@ an NXDOMAIN or NODATA, or simply return a NODATA response immediately.
 Since Covert Resource Records are not available for regular querying and are
 used only internally their existence in zone should not, in any way, change
 the behaviour of zone. Therefore, when signing the zone, Covert Resource
-Records MUST be ommited entirely and treated as they do not exist.
+Records MUST be ommited entirely and treated as they do not exist:
+ - Nodes that contain only Covert RRs and are not empty non-terminals MUST
+   be ommited from NSEC [@!RFC4034] and NSEC3 [RFC5155] RR chains.
+ - Any Covert RR types MUST NOT be included in the Type Bit Map field of
+   an NSEC or NSEC3 RR.
 
 ## Interaction with ZONEMD
 
