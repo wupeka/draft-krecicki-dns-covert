@@ -7,7 +7,7 @@ ipr = "trust200902"
 area = "Internet"
 workgroup = "DNSOP Working Group"
 updates = [6195]
-date = 2019-07-05T00:00:00Z
+date = 2019-07-06T18:50:00Z
 
 [seriesInfo]
 name = "Internet-Draft"
@@ -19,11 +19,15 @@ status = "standard"
 initials = "W."
 surname = "Krecicki"
 fullname = "Witold Krecicki"
-organization = "Internet Systems Consortium"
+organization = "ISC"
 [author.address]
  email = "wpk@isc.org"
 [author.address.postal]
- country = "PL"
+ street = "950 Charter St"
+ city = "Redwood City"
+ region = "CA"
+ code = "94063"
+ country = "US"
 
 [[author]]
 initials = "E."
